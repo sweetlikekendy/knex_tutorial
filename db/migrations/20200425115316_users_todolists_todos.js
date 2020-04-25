@@ -14,10 +14,17 @@ exports.up = function (knex) {
       table.datetime("created_at");
       table.integer("user_id").unsigned().references("users.id");
     }),
+    knex.schema.createTable("todos", (table) => {
+      table.increments("id").primary();
+      table.string("description");
+      table.datetime("created_at");
+      table.integer("todolist_id").unsigned().references("todolists.id");
+    }),
   ]);
 };
 exports.down = function (knex) {
   return Promise.all([
+    knex.schema.dropTable("todos"),
     knex.schema.dropTable("todolists"),
     knex.schema.dropTable("users"),
   ]);

@@ -1,6 +1,7 @@
 // 1. Load the JSON data from each data file
 const usersData = require("../../../data/users");
 const todolistsData = require("../../../data/todolists");
+const todosData = require("../../../data/todos");
 
 // 2. Create a knex seed (and export it)
 exports.seed = function (knex) {
@@ -27,6 +28,14 @@ exports.seed = function (knex) {
         // 6. Resolve all of the product's promises
         return Promise.all(todolistsPromises);
       })
+      .then(() => {
+        let todoPromises = [];
+        todosData.forEach((todo) => {
+          let title = todo.todolist_title;
+          todoPromises.push(createTodo(knex, todo, title));
+        });
+        return Promise.all(todoPromises);
+      })
   );
 };
 
@@ -41,6 +50,21 @@ const createTodolist = (knex, todolist, firstName) => {
         title: todolist.title,
         created_at: todolist.created_at,
         user_id: userRecord.id,
+      });
+    })
+    .catch((err) => console.error(err));
+};
+
+const createTodo = (knex, todo, title) => {
+  return knex("todolists")
+    .where("title", title)
+    .first()
+    .then((todolistRecord) => {
+      //  - Insert the product with the merchant 'id' as the foreign key
+      return knex("todos").insert({
+        description: todo.description,
+        created_at: todo.created_at,
+        todolist_id: todolistRecord.id,
       });
     })
     .catch((err) => console.error(err));
